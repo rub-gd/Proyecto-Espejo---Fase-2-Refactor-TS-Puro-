@@ -49,11 +49,20 @@ export class TaskManager {
 
     public pintarTareas(): void {
         const listaContenedor = document.getElementById('lista-tareas');
+        const listaEspejo = document.getElementById('lista-espejo');
+
             if (listaContenedor === null) {
                 console.error('No se encontró la lista de tareas.');
                 return;
             }
+
+            if (listaEspejo === null) {
+                console.error('No se encontró la lista espejo.');
+                return;
+            }
+
                 listaContenedor.innerHTML = '';
+                listaEspejo.innerHTML = '';
 
         const tareasFiltradas = this.tareas.filter(tarea => {
             if (this.filtroActual === 'Pendientes') {
@@ -82,6 +91,21 @@ export class TaskManager {
                 });
                     li.appendChild(boton);
                     listaContenedor.appendChild(li);
+        });
+
+        this.tareas.forEach(tarea => {
+            const liEspejo = document.createElement('li');
+            liEspejo.classList.add('item-tarea', tarea.prioridad);
+                if (tarea.completada) {
+                    liEspejo.classList.add('completada');
+                }
+                else {
+                    liEspejo.classList.add('pendiente');
+                }
+                    const textoEspejo = document.createElement('span');
+                    textoEspejo.textContent = tarea.titulo;
+                        liEspejo.appendChild(textoEspejo);
+                        listaEspejo.appendChild(liEspejo);
         });
     }
 
