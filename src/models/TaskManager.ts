@@ -12,14 +12,88 @@ export class TaskManager {
             this.filtroActual = 'Todas';
     }
 
-  public cambiarEstado(id: number): boolean {
-    let tareaEncontrada = false;
-        this.tareas.forEach(tarea => {
-            if (tarea.id === id) {
-                tarea.completada = !tarea.completada;
-                tareaEncontrada = true;
+    public cambiarFiltro(filtro: 'Todas' | 'Pendientes' | 'Completadas'): void {
+      this.filtroActual = filtro;
+      this.pintarTareas();
+    }
+
+    public agregarTarea(titulo: string, prioridad: 'Alta' | 'Media' | 'Baja'): boolean {
+      const limpiadoDeTitulo = titulo.trim();
+        if (limpiadoDeTitulo === '') {
+            return false;
+        }
+      const nuevaTarea: Tarea = {
+        id: Date.now(),
+        titulo: limpiadoDeTitulo,
+        prioridad: prioridad,
+        completada: false
+      };
+        this.tareas = [...this.tareas, nuevaTarea];
+        this.pintarTareas();
+            return true;
+    }
+
+    public cambiarEstado(id: number): boolean {
+        let tareaEncontrada = false;
+            this.tareas.forEach(tarea => {
+                if (tarea.id === id) {
+                    tarea.completada = !tarea.completada;
+                    tareaEncontrada = true;
+                }
+            });
+        if (tareaEncontrada) {
+            this.pintarTareas();
+        }
+        return tareaEncontrada;
+    }
+
+    public pintarTareas(): void {
+        const listaContenedor = document.getElementById('lista-tareas');
+            if (listaContenedor === null) {
+                console.error('No se encontró la lista de tareas.');
+                return;
             }
+                listaContenedor.innerHTML = '';
+
+        const tareasFiltradas = this.tareas.filter(tarea => {
+            if (this.filtroActual === 'Pendientes') {
+                return !tarea.completada;
+            }
+            if (this.filtroActual === 'Completadas') {
+                return tarea.completada;
+            }
+                return true;
         });
-    return tareaEncontrada;
-  }
+
+        tareasFiltradas.forEach(tarea => {
+            const li = document.createElement('li');
+                li.textContent = tarea.titulo;
+                li.classList.add('item-tarea', tarea.prioridad);
+                    if (tarea.completada) {
+                        li.classList.add('completada');
+                    } else {
+                        li.classList.add('pendiente');
+                    }
+
+            const boton = document.createElement('button');
+                boton.textContent = 'Cambiar estado';
+                boton.addEventListener('click', () => {
+                    this.cambiarEstado(tarea.id);
+                });
+                    li.appendChild(boton);
+                    listaContenedor.appendChild(li);
+        });
+    }
+
+    public async inicializarApp(): Promise<void> {
+        await new Promise<void>(resolve => setTimeout(resolve, 1500));
+            const loadingState = document.getElementById('loading-state');
+                if (loadingState === null) {
+                    console.error('No se encontró el mensaje de carga.');
+                }
+                else {
+                    loadingState.style.display = 'none';
+                }
+                this.pintarTareas();
+    }
 }
